@@ -25,11 +25,14 @@ public class PanelWatch extends JPanel {
 
   private WatchController controller;
   private JLabel timeLabel;
+  private JLabel timeSettingLabel;
+
   private JPanel spinnerPanel;
 
   private JButton btnStart;
   private JButton btnStop;
 
+  private JSpinner timeSettingSpinner;
   private JSpinner hourSpinner;
   private JSpinner minuteSpinner;
   private JSpinner secondSpinner;
@@ -48,6 +51,10 @@ public class PanelWatch extends JPanel {
     timeLabel.setFont(new Font("Serif", Font.PLAIN, 48));
     setLayout(new BorderLayout());
 
+    JPanel labelPanel = new JPanel(new FlowLayout());
+
+    labelPanel.add(timeLabel);
+
     JPanel btnPanel = new JPanel(new FlowLayout());
     btnPanel.add(btnStart);
     btnPanel.add(btnStop);
@@ -58,10 +65,14 @@ public class PanelWatch extends JPanel {
     spinnerPanel.add(minuteSpinner);
     spinnerPanel.add(new JLabel(":"));
     spinnerPanel.add(secondSpinner);
-
+    spinnerPanel.add(new JLabel("  "));
+    spinnerPanel.add(timeSettingSpinner);
+    JPanel topLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    topLeftPanel.add(timeSettingLabel);
     JPanel centerPanel = new JPanel(new BorderLayout());
-    centerPanel.add(timeLabel, BorderLayout.CENTER);
+    centerPanel.add(labelPanel, BorderLayout.CENTER);
     centerPanel.add(spinnerPanel, BorderLayout.SOUTH);
+    add(topLeftPanel, BorderLayout.NORTH);
     add(centerPanel, BorderLayout.CENTER);
     add(btnPanel, BorderLayout.SOUTH);
   }
@@ -69,6 +80,8 @@ public class PanelWatch extends JPanel {
   private void setActions() {
     btnStart.addActionListener(e -> startTimer());
     btnStop.addActionListener(e -> stopTimer());
+
+    timeSettingSpinner.addChangeListener(e -> updateTimeLabel());
     hourSpinner.addChangeListener(e -> updateTimeLabel());
     minuteSpinner.addChangeListener(e -> updateTimeLabel());
     secondSpinner.addChangeListener(e -> updateTimeLabel());
@@ -100,13 +113,28 @@ public class PanelWatch extends JPanel {
     spinnerPanel.setVisible(isRunning);
   }
 
+  private String setTextTimeSetting(String time) {
+    return "<html><div style='text-align: center;'>Báo thức sau<br><span style='font-size: 12px;'>"
+        + time + " </span></div></html>";
+  }
+
   private void initialize() {
-    controller = new WatchController(00, 00, 00);
+    controller = new WatchController(00, 00, 00, 30, 00);
     timeLabel = new JLabel("00:00:00", JLabel.CENTER);
+    timeSettingLabel = new JLabel(setTextTimeSetting("30:00"), JLabel.CENTER);
     btnStart = new JButton("Start");
     btnStop = new JButton("Stop");
     isRunning = false;
     time = new Timer(1000, e -> updateTime());
+
+    SpinnerNumberModel timeSettingModel = new SpinnerNumberModel(30, 0, 240, 1);
+
+    timeSettingSpinner = new JSpinner(timeSettingModel);
+    timeSettingSpinner.setFont(new Font("Serif", Font.PLAIN, 24));
+    timeSettingSpinner.setEditor(new JSpinner.NumberEditor(timeSettingSpinner, "00"));
+    timeSettingSpinner.setBorder(null);
+    timeSettingSpinner.setFocusable(false);
+
     SpinnerNumberModel hourModel = new SpinnerNumberModel(0, 0, 24, 1);
 
     hourSpinner = new JSpinner(hourModel);
@@ -137,20 +165,32 @@ public class PanelWatch extends JPanel {
       int hour = (int) hourSpinner.getValue();
       int minute = (int) minuteSpinner.getValue();
       int second = (int) secondSpinner.getValue();
+      int minuteAlarm = (int) timeSettingSpinner.getValue();
       controller.setHour(hour);
       controller.setMinute(minute);
       controller.setSecond(second);
-      timeLabel.setText(controller.timeString());
+      controller.setAlarmMinute(minuteAlarm);
+      controller.setAlarmSecond(0);
+      updateLabel();
     }
+  }
+
+  private void updateLabel() {
+    timeSettingLabel.setText(setTextTimeSetting(controller.getAlarmTime()));
+    timeLabel.setText(controller.getTime());
+    controller.increaseTime();
   }
 
   private void updateTime() {
     if (isRunning) {
       if (controller.isRun()) {
-        timeLabel.setText(controller.timeString());
+        if (controller.isAlarmRang()) {
+          playAlarmSound();
+        }
+        updateLabel();
       } else {
         stopTimer();
-        timeLabel.setText(controller.timeString());
+        timeLabel.setText(controller.getTime());
         playAlarmSound();
       }
     }
