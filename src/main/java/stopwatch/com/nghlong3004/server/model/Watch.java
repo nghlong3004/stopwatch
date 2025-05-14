@@ -1,16 +1,41 @@
 package stopwatch.com.nghlong3004.server.model;
 
 public class Watch {
-  
+
   private int hour;
   private int minute;
   private int second;
-  
-  public Watch(int hour, int minute, int second) {
+  private int alarmMinute;
+  private int alarmSecond;
+
+  public Watch(int hour, int minute, int second, int alarmMinute, int alarmSecond) {
     this.hour = hour;
     this.minute = minute;
     this.second = second;
+    this.alarmMinute = alarmMinute;
+    this.alarmSecond = alarmSecond;
   }
+
+
+  public int getAlarmMinute() {
+    return alarmMinute;
+  }
+
+
+  public void setAlarmMinute(int alarmMinute) {
+    this.alarmMinute = alarmMinute;
+  }
+
+
+  public int getAlarmSecond() {
+    return alarmSecond;
+  }
+
+
+  public void setAlarmSecond(int alarmSecond) {
+    this.alarmSecond = alarmSecond;
+  }
+
 
   public int getHour() {
     return hour;
@@ -35,5 +60,5 @@ public class Watch {
   public void setSecond(int second) {
     this.second = second;
   }
-  
+
 }
