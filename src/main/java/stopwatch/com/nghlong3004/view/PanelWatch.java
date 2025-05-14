@@ -3,6 +3,14 @@ package stopwatch.com.nghlong3004.view;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -68,6 +76,9 @@ public class PanelWatch extends JPanel {
 
   private void startTimer() {
     if (!isRunning) {
+      controller.setHour((int) hourSpinner.getValue());
+      controller.setMinute((int) minuteSpinner.getValue());
+      controller.setSecond((int) secondSpinner.getValue());
       spinnerSetVisible();
       isRunning = true;
       time.start();
@@ -140,7 +151,27 @@ public class PanelWatch extends JPanel {
       } else {
         stopTimer();
         timeLabel.setText(controller.timeString());
+        playAlarmSound();
       }
+    }
+  }
+
+  private void playAlarmSound() {
+    try {
+      InputStream audioSrc =
+          getClass().getResource("/com/nghlong3004/sound/funny-minion.wav").openStream();
+      if (audioSrc == null) {
+        System.err.println("Không tìm thấy file beep.wav trong resources!");
+        return;
+      }
+
+      AudioInputStream audioStream =
+          AudioSystem.getAudioInputStream(new BufferedInputStream(audioSrc));
+      Clip clip = AudioSystem.getClip();
+      clip.open(audioStream);
+      clip.start();
+    } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+      e.printStackTrace();
     }
   }
 }
